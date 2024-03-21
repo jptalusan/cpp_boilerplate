@@ -21,11 +21,13 @@ FetchContent_Declare(
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
-add_definitions(
-    -Wall
-    -Wextra
-    # Other flags
-)
+# If used, then it will apply to all.
+# add_definitions(
+#     -Wall
+#     -Wextra
+#     -O2
+#     # Other flags
+# )
 
 # Set default cmake build type to release
 if(NOT CMAKE_BUILD_TYPE)
@@ -43,7 +45,8 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CUSTOM_MODULE_PATH})
 
 # Add MLPack since i built it myself.
 set(MLPACK_INCLUDE_DIR "/home/jpt/libs/mlpack-4.3.0/mlpack-bin/include")
-include_directories(${MLPACK_INCLUDE_DIR})
+# Add SYSTEM keyword to silence warnings
+include_directories(SYSTEM ${MLPACK_INCLUDE_DIR})
 
 # Add GitHash
 include(${CUSTOM_MODULE_PATH}/GitHash.cmake)
@@ -90,10 +93,13 @@ file(GLOB SOURCES "src/*.cpp")
 # Add the executable
 add_executable(${PROGRAM_NAME} ${SOURCES})
 
+
 # Linking OpenMP
 target_link_libraries(${PROGRAM_NAME} PRIVATE OpenMP::OpenMP_CXX)
 target_link_libraries(${PROGRAM_NAME} PRIVATE ${ARMADILLO_LIBRARIES})
 target_link_libraries(${PROGRAM_NAME} PRIVATE ${Boost_LIBRARIES})
+target_link_libraries(${PROGRAM_NAME} PRIVATE ${BLAS_LIBRARIES})
+
 # If using prebuilt apt install ones.
 # target_link_libraries(${PROGRAM_NAME} PRIVATE mlpack)
 
@@ -102,8 +108,24 @@ add_library(MyExternalLib STATIC IMPORTED)
 set_target_properties(MyExternalLib PROPERTIES IMPORTED_LOCATION "/home/jpt/git/AI-Toolbox/build/libAIToolboxMDP.a")
 target_link_libraries(${PROGRAM_NAME} PRIVATE MyExternalLib)
 
+add_library(MyExternalLib1 STATIC IMPORTED)
+set_target_properties(MyExternalLib1 PROPERTIES IMPORTED_LOCATION "/home/jpt/git/AI-Toolbox/build/libAIToolboxPOMDP.a")
+target_link_libraries(${PROGRAM_NAME} PRIVATE MyExternalLib1)
+
+add_library(MyExternalLib2 STATIC IMPORTED)
+set_target_properties(MyExternalLib2 PROPERTIES IMPORTED_LOCATION "/home/jpt/git/AI-Toolbox/build/libAIToolboxFMDP.a")
+target_link_libraries(${PROGRAM_NAME} PRIVATE MyExternalLib2)
+
 # For githash
 target_link_libraries(${PROGRAM_NAME} PRIVATE ${GITHASH_LIBRARIES})
+
+# Added this only to the program being build.
+target_compile_options(${PROGRAM_NAME} PRIVATE 
+    -Wall
+    -Wextra
+    -Werror
+    -Wpedantic
+)
 
 # Set different compile definitions and options for debug and release builds
 if(CMAKE_BUILD_TYPE MATCHES Debug)
@@ -111,7 +133,7 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
     target_compile_options(${PROGRAM_NAME} PRIVATE -g)
 elseif(CMAKE_BUILD_TYPE MATCHES Release)
     target_compile_definitions(${PROGRAM_NAME} PRIVATE NDEBUG=1)
-    target_compile_options(${PROGRAM_NAME} PRIVATE -O2)
+    target_compile_options(${PROGRAM_NAME} PRIVATE -O2 -DNDEBUG)
 endif()
 
 # Specify the directories where the executable should be installed
