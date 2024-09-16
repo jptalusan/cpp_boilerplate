@@ -22,14 +22,18 @@ jpt@100834-pc:~/git/cpp_trial/build$ cmake --version
 cmake version 3.16.3
 ```
 
+## OSX
+1. Install `homebrew`
+2. `brew install cmake gdb`
+
 ## Usage
 This uses `cmake` to create a make file. See the `CMakeLists.txt` for instructions on how the make file is generated.
 
 1. `git clone XXXX`
-2. `cd cpp_trial`
+2. `cd cpp_boilerplate`
 3. Download [Eigen 3.4.0](https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.gz)
-4. Untar and put in external_include folder.
-5. `mkdir build`
+4. Untar and get only the `Eigen` folder inside `eigen-3.4.0` and that put in `external_include` folder.
+5. `cd .. && mkdir build`
 6. `cd build`
 7. `cmake ..`
 8. `make`
